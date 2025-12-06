@@ -1,216 +1,112 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
-  <title>移动考试界面（可编辑）</title>
-  <style>
-    :root{
-      --blue:#5577d6;
-      --muted:#f5f7fb;
-      --text:#222;
-      --accent:#e76f6f;
-      --white:#fff;
-      --radius:8px;
-      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Segoe UI", Roboto, "Microsoft YaHei", Arial, sans-serif;
-    }
-    html,body{height:100%;margin:0;background:var(--white);-webkit-font-smoothing:antialiased}
-    /* phone-sized container centered but full width for mobile */
-    .viewport{max-width:420px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;border-left:0;border-right:0}
-
-    /* Top bar */
-    header{background:linear-gradient(180deg,var(--blue),#6b86e6);color:var(--white);padding:14px 12px;display:flex;align-items:center;justify-content:space-between}
-    .left, .center, .right{display:flex;align-items:center}
-    .left .back{margin-right:8px;font-size:18px;line-height:1;cursor:pointer}
-    .center{flex:1;justify-content:center}
-    .title{font-weight:600;font-size:18px}
-    .right button{background:transparent;border:0;color:var(--white);font-size:15px;cursor:pointer}
-
-    /* timer row */
-    .timer-row{background: #fff3f3;color:var(--accent);text-align:center;padding:10px 0;font-weight:600}
-
-    /* content area */
-    .content{padding:16px;flex:1;overflow:auto;background:var(--muted)}
-    .section{background:var(--white);border-radius:14px;padding:16px;margin-bottom:12px;box-shadow:0 1px 0 rgba(0,0,0,0.03)}
-    .section h4{margin:0 0 8px 0;font-size:16px}
-    .question-text{white-space:pre-wrap;color:var(--text);font-size:15px;line-height:1.6}
-
-    /* options */
-    .options{margin-top:12px}
-    .option{display:flex;align-items:center;padding:12px;border-radius:10px;border:1px solid #f0f0f0;margin-bottom:10px}
-    .option input{margin-right:12px;accent-color:var(--blue)}
-
-    /* bottom bar */
-    .bottom{padding:12px;background:var(--white);display:flex;justify-content:flex-end}
-    .btn{background:var(--blue);color:var(--white);padding:10px 16px;border-radius:10px;border:0;font-weight:600;cursor:pointer}
-
-    /* settings modal */
-    .modal{position:fixed;left:0;right:0;top:0;bottom:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.25);z-index:50}
-    .modal .panel{background:var(--white);width:92%;max-width:420px;padding:16px;border-radius:10px}
-    label{display:block;margin-top:8px;font-size:14px;color:#333}
-    input[type=number],input[type=text],textarea{width:100%;padding:8px;border-radius:6px;border:1px solid #ddd;margin-top:6px}
-    .row{display:flex;gap:8px}
-    .small{flex:1}
-    .link{color:var(--blue);cursor:pointer;text-decoration:underline}
-
-    /* editable placeholder styles */
-    [contenteditable]{outline:none}
-
-    /* ensure no black bars when previewed: full-bleed */
-    @media (max-width:420px){
-      .viewport{width:100%}
-    }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>2025秋期末考试</title>
+<style>
+html,body{margin:0;padding:0;height:100%;background:#f5f6fa;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}
+#app{max-width:430px;margin:0 auto;background:#f5f6fa;min-height:100vh;position:relative}
+/* 顶部 */
+.header{background:#5a78d6;color:#fff;height:56px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:600}
+.header span{outline:none}
+/* 倒计时 */
+.timer{background:#ffecec;color:#e35b5b;text-align:center;font-size:14px;padding:8px 0}
+/* 内容 */
+.content{padding:16px;padding-bottom:90px}
+.section{background:#fff;border-radius:14px;padding:16px;margin-bottom:14px}
+.section-title{color:#666;font-size:14px;margin-bottom:10px}
+.question{font-size:15px;line-height:1.6;margin-bottom:6px}
+.score{font-size:13px;color:#999;margin-bottom:10px}
+.option{display:flex;align-items:flex-start;border:1px solid #eee;border-radius:10px;padding:10px;margin-bottom:8px;font-size:14px}
+.option input{margin-top:3px;margin-right:10px}
+textarea{width:100%;min-height:120px;border:1px solid #eee;border-radius:10px;padding:10px;font-size:14px}
+/* 底部 */
+.footer{position:fixed;bottom:0;left:0;right:0;max-width:430px;margin:0 auto;background:#fff;border-top:1px solid #eee;height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 16px}
+.footer .progress{color:#4caf50;font-size:14px;cursor:pointer}
+.footer .next{background:#5a78d6;color:#fff;border:none;border-radius:10px;padding:8px 16px;font-size:14px}
+/* 编辑模式 */
+.editable{outline:2px dashed #5a78d6}
+</style>
 </head>
 <body>
-<div class="viewport" id="app">
-  <header>
-    <div class="left"><div class="back" id="backBtn">‹</div></div>
-    <div class="center"><div class="title" id="pageTitle" contenteditable="true" title="点击编辑标题">2025秋期末考试</div></div>
-    <div class="right"><button id="editBtn">编辑</button></div>
-  </header>
-  <div class="timer-row" id="timerRow">剩余时间: <span id="timer">59分17秒</span></div>
-  <div class="content" id="content">
-    <div class="section">
-      <div style="font-size:14px;color:#666;margin-bottom:8px">单项选择题</div>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-        <div style="font-weight:600">1、</div>
-        <div class="question-text" id="question" contenteditable="true">以下哪种法律制度不属于剥削阶级类型的法律制度？</div>
-      </div>
-      <div style="color:#888;margin-bottom:6px">（1分）</div>
-      <div class="options" id="options">
-        <label class="option"><input type="radio" name="q1" value="A"><span contenteditable="true">社会主义法律</span></label>
-        <label class="option"><input type="radio" name="q1" value="B"><span contenteditable="true">资本主义法律</span></label>
-        <label class="option"><input type="radio" name="q1" value="C"><span contenteditable="true">封建社会法律</span></label>
-        <label class="option"><input type="radio" name="q1" value="D"><span contenteditable="true">奴隶社会法律</span></label>
-      </div>
-    </div>
-    <!-- spacer to allow scrolling like real app -->
-    <div style="height:500px"></div>
-  </div>
-  <div class="bottom">
-    <button class="btn" id="nextBtn">下一题</button>
-  </div>
+<div id="app">
+  <div class="header"><span id="title" contenteditable="false">2024秋平时测试四</span></div>
+  <div class="timer">剩余时间：<span id="time">120分60秒</span></div>
 
-  <!-- settings modal -->
-  <div class="modal" id="modal">
-    <div class="panel">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <strong>编辑与保存</strong>
-        <div style="font-size:13px;color:#666;cursor:pointer" id="closeModal">关闭</div>
-      </div>
-      <label>倒计时（秒）</label>
-      <div class="row"><input type="number" id="timerInput" class="small" min="1"><button id="startTimer" class="btn small">设置并开始</button></div>
-      <label>题目文本（可直接编辑页面）</label>
-      <div style="display:flex;gap:8px;margin-top:8px">
-        <button id="saveBtn" class="btn small">保存到本地</button>
-        <button id="downloadBtn" class="btn small">导出为HTML</button>
-      </div>
-      <div style="margin-top:10px;color:#444;font-size:13px">提示：点击页面里的题目、选项或标题即可直接编辑。保存会把当前内容保存在浏览器存储，导出会生成一个独立的HTML文件用于发布（例如 GitHub Pages）。</div>
-    </div>
+  <div class="content" id="content"></div>
+
+  <div class="footer">
+    <div class="progress" id="progress">0/10</div>
+    <button class="next" id="nextBtn">下一题</button>
   </div>
 </div>
 
 <script>
-(function(){
-  // simple state and helpers
-  const modal = document.getElementById('modal');
-  const editBtn = document.getElementById('editBtn');
-  const closeModal = document.getElementById('closeModal');
-  const timerSpan = document.getElementById('timer');
-  const timerRow = document.getElementById('timerRow');
-  const timerInput = document.getElementById('timerInput');
-  const startTimerBtn = document.getElementById('startTimer');
-  const saveBtn = document.getElementById('saveBtn');
-  const downloadBtn = document.getElementById('downloadBtn');
+/******** 数据 ********/
+const questions = [
+// 单选 10
+{type:'single',score:1,title:'实践的主体是（ ）',opts:['绝对精神','具有思维能力、从事社会实践和认识活动的人','人','人的意识']},
+{type:'single',score:1,title:'实践的客体是（ ）',opts:['绝对精神的对象化','客观物质世界','人的意识的创造物','进入主体的认识和实践范围的客观事物']},
+{type:'single',score:1,title:'马克思主义认为，主客体之间的价值关系是指（ ）',opts:['主体对客体的物质欲望和要求','主体对客体的能动反映','主体对客体的改造和变革的结果','客体对于主体的有用性和效益性']},
+{type:'single',score:1,title:'“社会上一旦有技术上的需要，则这种需要会比十所大学更能把科学推向前进。”这说明（ ）',opts:['实践是认识的来源','技术推动了科学的发展','实践是认识发展的动力','科学进步是实践的目的']},
+{type:'single',score:1,title:'在商品经济运行中，价值、价格、供求三者之间的关系是（ ）',opts:['价格受供求关系影响，围绕价值上下波动','价格受价值影响，随供求关系变化而变动','价格由价值决定，反映价值并反映供求关系','价格由价值决定，反映价值但不反映供求关系']},
+{type:'single',score:1,title:'生产商品的劳动二重性中，形成商品价值的是（ ）',opts:['个别劳动','社会劳动','具体劳动','抽象劳动']},
+{type:'single',score:1,title:'货币最基本的职能是（ ）',opts:['价值尺度','流通手段','支付手段','贮藏手段和世界货币']},
+{type:'single',score:1,title:'最鲜明体现资本主义国家实质的国家职能是（ ）',opts:['政治职能','经济职能','社会职能','对外交往职能']},
+{type:'single',score:1,title:'商品经济的基本规律是（ ）',opts:['价值规律','剩余价值规律','竞争规律','货币流通规律']},
+{type:'single',score:1,title:'检验认识真理性的唯一标准是（ ）',opts:['客观实际','科学理论','实践','逻辑证明']},
+// 多选 3
+{type:'multi',score:2,title:'下列选项中属于共产主义含义的有（ ）',opts:['一种科学理论','一种现实运动','一种社会制度','一种社会理想']},
+{type:'multi',score:2,title:'价值是商品的本质属性，它是（ ）',opts:['凝结在商品中的抽象劳动','商品的社会属性','交换价值的基础','反映商品生产者之间的社会关系']},
+{type:'multi',score:2,title:'生产商品的劳动二重性是指（ ）',opts:['个别劳动','社会劳动','具体劳动','抽象劳动']},
+// 论述 1
+{type:'essay',score:20,title:'为什么说社会主义是人类社会发展的必然？并分析阿尔温·古尔德纳的观点。'}
+];
 
-  // load saved state
-  function loadState(){
-    try{
-      const raw = localStorage.getItem('exam_page_v1');
-      if(raw){
-        const st=JSON.parse(raw);
-        if(st.title) document.getElementById('pageTitle').innerText=st.title;
-        if(st.question) document.getElementById('question').innerText=st.question;
-        const spans = document.querySelectorAll('#options span');
-        if(st.options && st.options.length===spans.length){
-          spans.forEach((sp,i)=>sp.innerText=st.options[i]);
-        }
-        if(st.remaining !== undefined){ startCountdown(st.remaining); }
-      }
-    }catch(e){console.warn(e)}
-  }
+/******** 渲染 ********/
+let index=0;
+const content=document.getElementById('content');
+const progress=document.getElementById('progress');
+function render(){
+ const q=questions[index];
+ progress.innerText=(index+1)+'/'+questions.length;
+ let html=`<div class=section>`;
+ html+=`<div class=section-title>${q.type==='single'?'单项选择题':'多项选择题'}^</div>`;
+ html+=`<div class=question>${index+1}. ${q.title}</div>`;
+ html+=`<div class=score>（${q.score}分）</div>`;
+ if(q.type==='essay'){
+ html+=`<textarea placeholder="请输入答案"></textarea>`;
+ }else{
+ q.opts.forEach((o,i)=>{
+ html+=`<label class=option><input type=${q.type==='single'?'radio':'checkbox'} name=q${index}>${String.fromCharCode(65+i)}. ${o}</label>`;
+ });}
+ html+='</div>';
+ content.innerHTML=html;
+}
+render();
 
-  // save current state to localStorage
-  function saveState(){
-    const title = document.getElementById('pageTitle').innerText;
-    const question = document.getElementById('question').innerText;
-    const spans = Array.from(document.querySelectorAll('#options span')).map(s=>s.innerText);
-    const state = {title,question,options:spans,remaining:remainingSeconds};
-    localStorage.setItem('exam_page_v1',JSON.stringify(state));
-    alert('已保存到本地浏览器存储。');
-  }
+/******** 翻页 ********/
+document.getElementById('nextBtn').onclick=()=>{if(index<questions.length-1){index++;render();content.scrollTop=0;}};
+progress.onclick=()=>{if(index>0){index--;render();content.scrollTop=0;}};
 
-  // export current page as standalone HTML file
-  function exportHTML(){
-    // capture current DOM HTML inside viewport
-    const doc = `<!doctype html>\n<html lang="zh-CN">\n<head>\n<meta charset="utf-8" />\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n<title>导出：移动考试界面</title>\n<style>${document.querySelector('style').innerText}</style>\n</head>\n<body>\n${document.getElementById('app').outerHTML}\n<script>${(function(){/* placeholder */}).toString()}\n</script>\n</body>\n</html>`;
-    const blob = new Blob([doc],{type:'text/html'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = 'mobile_exam_interface.html';
-    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
-  }
+/******** 倒计时 ********/
+let total=120*60+60; // 按你要求 120分60秒
+setInterval(()=>{
+ total--;
+ if(total<0)return;
+ const m=Math.floor(total/60);
+ const s=total%60;
+ document.getElementById('time').innerText=`${m}分${s}秒`;
+},1000);
 
-  editBtn.addEventListener('click',()=>modal.style.display='flex');
-  closeModal.addEventListener('click',()=>modal.style.display='none');
-
-  saveBtn.addEventListener('click',saveState);
-  downloadBtn.addEventListener('click',exportHTML);
-
-  // timer implementation
-  let countdownTimer = null;
-  let remainingSeconds = null;
-  function formatSec(s){
-    if(s<=0) return '00:00:00';
-    const hh = Math.floor(s/3600); const mm = Math.floor((s%3600)/60); const ss = s%60;
-    if(hh>0) return `${hh}时${mm}分${ss}秒`;
-    if(mm>0) return `${mm}分${ss}秒`;
-    return `${ss}秒`;
-  }
-  function updateTimer(){
-    timerSpan.innerText = formatSec(remainingSeconds);
-    if(remainingSeconds<=0){ clearInterval(countdownTimer); countdownTimer=null; timerRow.innerText='时间已到'; }
-  }
-  function startCountdown(seconds){
-    if(countdownTimer) clearInterval(countdownTimer);
-    remainingSeconds = Number(seconds);
-    updateTimer();
-    countdownTimer = setInterval(()=>{
-      remainingSeconds--;
-      updateTimer();
-      if(remainingSeconds<=0){ clearInterval(countdownTimer); countdownTimer=null; }
-    },1000);
-  }
-
-  startTimerBtn.addEventListener('click',()=>{
-    const v = Number(timerInput.value);
-    if(!v || v<=0){alert('请输入大于0的秒数');return}
-    startCountdown(v);
-    saveState();
-    alert('倒计时已设置');
-  });
-
-  // initialize
-  loadState();
-
-  // expose a little API on window for convenience
-  window.examUI = {
-    startCountdown
-  };
-
-  // no black borders: ensure body background is white and viewport width uses device width
-}());
+/******** 交卷编辑 ********/
+let editable=false;
+document.querySelector('.header').onclick=()=>{
+ editable=!editable;
+ document.getElementById('title').contentEditable=editable;
+ alert(editable?'进入编辑模式':'退出编辑模式');
+};
 </script>
 </body>
 </html>
